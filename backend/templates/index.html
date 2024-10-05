@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e2e3e5;
+            border: 1px solid #c3c3c3;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Image Upload App!</h1>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required>
+        <button type="submit">Upload Image</button>
+    </form>
+    <div id="response"></div>
+    
+    <script>
+        document.getElementById('uploadForm').onsubmit = function(event) {
+            event.preventDefault(); // Prevent default form submission
+    
+            const formData = new FormData(this);
+    
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response data here
+                const responseDiv = document.getElementById('response');
+                if (data.error) {
+                    responseDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+                } else {
+                    responseDiv.innerHTML = `
+                        <strong>Success:</strong> Image uploaded successfully! <br>
+                        <strong>Filename:</strong> ${data.metadata.filename} <br>
+                        <strong>Metadata:</strong>
+                        <ul>
+                            <li>Format: ${data.metadata.format}</li>
+                            <li>Mode: ${data.metadata.mode}</li>
+                            <li>Size: ${data.metadata.size[0]} x ${data.metadata.size[1]} pixels</li>
+                            <li>Info: ${JSON.stringify(data.metadata.info)}</li>
+                        </ul>
+                        <strong>Extracted Text:</strong> <pre>${data.extracted_text}</pre>
+                        <strong>Sensitivity Rating:</strong> ${data.sensitivity_rating}
+                    `;
+                }
+            })
+            .catch(error => {
+                document.getElementById('response').innerHTML = `<strong>Error:</strong> ${error}`;
+            });
+        }
+    </script>
+</body>
+</html>
